@@ -37,7 +37,17 @@ int main(int argc, char **argv)
 		random = reader_io.InquireVariable<int>("RandomInts");
 		adios2::Dims shape = random.Shape();
 		std::cout << shape[0] << " " << shape[1] << std::endl;
-		//random.SetSelection({{0}, {shape[0]}});
+
+		//random.SetSelection({{0, 0}, {shape[0], shape[1]}});
+		random.SetSelection(adios2::Box<adios2::Dims>({0,0}, {shape[0], shape[1]}));
+
+		adios2::Dims start{0, 0};
+		auto d1 = shape[0];
+		auto d2 = shape[1];
+		adios2::Dims count{d1, d2};
+		adios2::Box<adios2::Dims> sel(start, count);
+		random.SetSelection(sel);
+
 		//reader.Get(random, );
         reader.EndStep();
 	}
