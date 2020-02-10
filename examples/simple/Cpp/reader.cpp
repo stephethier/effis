@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 		}
 		std::cout << reader.CurrentStep() << std::endl;
 		random = reader_io.InquireVariable<int>("RandomInts");
-		shape = random.Shape();
+		adios2::Dims shape = random.Shape();
 		std::cout << shape[0] << " " << shape[1] << std::endl;
 		//random.SetSelection({{0}, {shape[0]}});
 		//reader.Get(random, );
