@@ -6,7 +6,6 @@ int main(int argc, char **argv)
 {
     const std::size_t nelems = 10;
 	int KnownInt, RandomInt, KnownInts[nelems], RandomInts[nelems];
-	int GlobalDims[1], Offsets[1], LocalDims[1];
 
 	MPI_Comm comm;
 	int rank, nproc;
@@ -37,11 +36,8 @@ int main(int argc, char **argv)
     //@effis-begin "Jabberwocky"->"Jaberwocky"
 	adios2::IO io = adios.DeclareIO("Jabberwocky");
 
-    GlobalDims[0] = nproc * nelems;
-    Offsets[0] = rank * nelems;
-    LocalDims[0] = nelems;
-	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  {nproc*nelems}, {rank*nelems}, {nelems}, adios2::ConstantDims);
-    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", {nproc*nelems}, {rank*nelems}, {nelems}, adios2::ConstantDims);
+	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  {nproc, nelems}, {rank, 0}, {1, nelems}, adios2::ConstantDims);
+    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", {nproc, nelems}, {rank, 0}, {1, nelems}, adios2::ConstantDims);
     if (rank == 0)
 	{
 		vKnownInt  = io.DefineVariable<int>("KnownInt");
