@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
 
     //@effis-init comm=comm
-	adios2::ADIOS adios(comm);
+	adios2::ADIOS adios(comm, adios2::DebugON);
 
     if (rank == 0)
 	{
