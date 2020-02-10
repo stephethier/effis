@@ -36,8 +36,8 @@ int main(int argc, char **argv)
     //@effis-begin "Jabberwocky"->"Jaberwocky"
 	adios2::IO io = adios.DeclareIO("Jabberwocky");
 
-	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  {nproc, nelems}, {rank, 0}, {1, nelems}, adios2::ConstantDims);
-    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", {nproc, nelems}, {rank, 0}, {1, nelems}, adios2::ConstantDims);
+	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  {static_cast<std::size_t>(nproc), nelems}, {static_cast<std::size_t>(rank), 0}, {1, nelems}, adios2::ConstantDims);
+    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", {static_cast<std::size_t>(nproc), nelems}, {static_cast<std::size_t>(rank), 0}, {1, nelems}, adios2::ConstantDims);
     if (rank == 0)
 	{
 		vKnownInt  = io.DefineVariable<int>("KnownInt");
