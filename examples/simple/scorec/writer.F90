@@ -24,10 +24,7 @@ program writer
 		KnownInts(i) = i
 	end do
 
-    !@effis-init comm=comm
 	call adios2_init(adios, comm, .true., ierr)
-
-    !@effis-begin "Jabberwocky"->"Jaberwocky"
 	call adios2_declare_io(io, adios, "Jabberwocky", ierr)
 	call adios2_set_engine(io, "SST", ierr)
 	call adios2_set_parameter(io, "RendezvousReaderCount", "0", ierr)
@@ -43,24 +40,15 @@ program writer
 	call adios2_open(engine, io, "Jabberwocky.bp", adios2_mode_write, comm, ierr)
 
 	do i=1, 10
-        !@effis-timer start="LoopTimer", comm=comm
-
 		call random_number(RandomReals)
-
-        !@effis-timestep physical=i*dt, number=i
 		call adios2_begin_step(engine, ierr)
 		call adios2_put(engine, "KnownInts",   KnownInts, ierr)
 		call adios2_put(engine, "RandomReals", RandomReals, ierr)
 		call adios2_end_step(engine, ierr)
 		call sleep(1)
-
-        !@effis-timer stop="LoopTimer"
 	end do
 
 	call adios2_close(engine, ierr)
-    !@effis-end
-
-    !@effis-finalize
 	call mpi_finalize(ierr)
 
 end program writer

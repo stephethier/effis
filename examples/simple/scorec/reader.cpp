@@ -13,10 +13,7 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(comm, &rank);
 	MPI_Comm_size(comm, &nproc);
 
-    //@effis-init comm=comm
 	adios2::ADIOS adios(comm, adios2::DebugON);
-
-    //@effis-begin "Jabberwocky"->"Jaberwocky"
 	adios2::IO reader_io = adios.DeclareIO("Jabberwocky");
 	reader_io.SetEngine("SST");
 	adios2::Engine reader = reader_io.Open("Jabberwocky.bp", adios2::Mode::Read, comm);
@@ -56,13 +53,8 @@ int main(int argc, char **argv)
 		const adios2::Box<adios2::Dims> sel(start, count);
 		random.SetSelection(sel);
 		reader.Get(random, data);
-
-		//reader.Get(random, );
         reader.EndStep();
 	}
 
     reader.Close();
-    //@effis-end
-
-   //@effis-finalize
 }

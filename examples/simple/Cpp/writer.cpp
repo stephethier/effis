@@ -6,6 +6,7 @@ int main(int argc, char **argv)
 {
     const std::size_t nelems = 10;
 	int KnownInt, RandomInt, KnownInts[nelems], RandomInts[nelems];
+	double RandomReals[nelems];
 
 	MPI_Comm comm;
 	int rank, nproc;
@@ -36,21 +37,23 @@ int main(int argc, char **argv)
     //@effis-begin "Jabberwocky"->"Jaberwocky"
 	adios2::IO io = adios.DeclareIO("Jabberwocky");
 
-	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  {static_cast<std::size_t>(nproc), nelems}, {static_cast<std::size_t>(rank), 0}, {1, nelems}, adios2::ConstantDims);
-    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", {static_cast<std::size_t>(nproc), nelems}, {static_cast<std::size_t>(rank), 0}, {1, nelems}, adios2::ConstantDims);
+	adios2::Dims global{static_cast<size_t>(nproc), nelems};
+	adios2::Dims offset{static_cast<size_t>(rank), 0};
+	adios2::Dims local{1, nelems};
+
+	adios2::Variable<int> vKnownInts  = io.DefineVariable<int>("KnownInts",  global, offset, local, adios2::ConstantDims);
+    adios2::Variable<int> vRandomInts = io.DefineVariable<int>("RandomInts", global, offset, local, adios2::ConstantDims);
+    adios2::Variable<double> vRandomReals = io.DefineVariable<double>("RandomReals", global, offset, local, adios2::ConstantDims);
     if (rank == 0)
 	{
 		vKnownInt  = io.DefineVariable<int>("KnownInt");
         vRandomInt = io.DefineVariable<int>("RandomInt");
 	}
 
+	io.SetEngine("SST");
+	io.SetParameter("RendezvousReaderCount", "1");
 	adios2::Engine engine = io.Open("Jabberwocky.bp", adios2::Mode::Write, comm);
 
-    if (rank == 0)
-	{
-        engine.Put(vKnownInt,  KnownInt);
-        engine.Put(vRandomInt, RandomInt);
-	}
 
     for (int j=0; j<10; j++)
 	{
@@ -58,12 +61,20 @@ int main(int argc, char **argv)
 		
 		for (int i=0; i<nelems; i++)
 		{
-			RandomInts[i] = rand() % 1000;
+			RandomInts[i] = (rand() % 1000);
+			RandomReals[i] = 1.0 * (rand() % 1000);
 		}
         //@effis-timestep physical=j*dt, number=j
+		
         engine.BeginStep();
+		if ((rank == 0) && (j == 0))
+		{
+			engine.Put(vKnownInt,  KnownInt);
+			engine.Put(vRandomInt, RandomInt);
+		}
         engine.Put(vKnownInts,  KnownInts);
         engine.Put(vRandomInts, RandomInts);
+        engine.Put(vRandomReals, RandomReals);
         engine.EndStep();
 
         //@effis-timer stop="LoopTimer"
