@@ -6,12 +6,69 @@ import re
 import importlib.util
 import sys
 import os
+import subprocess
 
 if 'ADIOS' in os.environ:
     sys.path.insert(0, os.environ['ADIOS'])
 
 import adios2
 import numpy as np
+
+import codar.savanna as savanna
+
+
+"""
+def wrap(self, run, sched_args, find_in_path=True) 
+
+def __init__(self, name, exe, args, sched_args, env, working_dir,
+	     timeout=None, nprocs=1, res_set=None,
+	     stdout_path=None, stderr_path=None,
+	     return_path=None, walltime_path=None,
+	     log_prefix=None, sleep_after=None,
+	     depends_on_runs=None, hostfile=None,
+	     runner_override=False):
+
+runner_args = [exe_path,
+	       self.nrs_arg, jsrun_opts.nrs,
+	       self.tasks_per_rs_arg, jsrun_opts.tasks_per_rs,
+	       self.cpus_per_rs_arg, jsrun_opts.cpus_per_rs,
+	       self.gpus_per_rs_arg, jsrun_opts.gpus_per_rs,
+	       self.rs_per_host_arg, jsrun_opts.rs_per_host,
+"""
+
+def OptionsList(options):
+    opts = []
+    for name in options:
+        if (type(options[name]) == bool) and options[name]:
+            opts += ["--{0}".format(name)]
+        else:
+            opts += ["--{0}".format(name), options[name]]
+    return opts
+
+
+def LaunchCompute(exe, args=[], options={}, nproc=1, ppn=1):
+    opts = OptionsList(options)
+
+    if MonitorGlobal.machine == "summit":
+        cmd =  [MonitorGlobal.runner.exe]
+        cmd += [MonitorGlobal.nrs_arg, nproc]
+        cmd += [MonitorGlobal.tasks_per_rs_arg, 1]
+        cmd += [MonitorGlobal.rs_per_host_arg, ppn]
+        cmd += [MonitorGlobal.cpus_per_rs_arg, savanna.machines.summit.processes_per_node//ppn]
+        #cmd += [MonitorGlobal.gpus_per_rs_arg, jsrun_opts.gpus_per_rs]
+        cmd += [exe] + args + opts
+    else:
+        run = savanna.model.Run("N/A", exe, args + opts, MonitorGlobal.sched_args, os.environ, "./")
+        run.tasks_per_node = ppn
+        cmd = runner.wrap(run, MonitorGlobal.sched_args)
+
+    subprocess.Popen(cmd, env=os.environ)
+
+
+def LaunchLogin(exe, args=[], options={}):
+    opts = OptionsList(options)
+    cmd = [exe] + args + opts
+    subprocess.Popen(cmd, env=os.environ)
 
 
 def GetArgumentList(text):
@@ -38,6 +95,9 @@ def GetArgumentList(text):
 
 class MonitorGlobal:
     module = None
+    runner = None
+    machine = None
+    sched_args = None
     setup = {}
 
 
@@ -210,6 +270,11 @@ class UserMonitors(object):
             configfile = "monitor-config.yaml"
         with open(configfile, 'r') as ystream:
             config = yaml.load(ystream)
+
+        MonitorGlorbal.machine = config['machine']
+        MonitorGlorbal.sched_args = config['sched_args']
+        exec("runner_name = savanna.machines.{0}.runner_name".format(MonitorGlobal.machine))
+        exec("MonitorGlobal.runner = savanna.runners.{0}".format())
 
         spec = importlib.util.spec_from_file_location("module.name", config['filename'])
         MonitorGlobal.module = importlib.util.module_from_spec(spec)

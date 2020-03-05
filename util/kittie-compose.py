@@ -660,6 +660,8 @@ class KittieJob(cheetah.Campaign):
 
         if "monitors" in self.codenames:
             self.codesetup["monitors"][self.keywords['path']] = os.path.join(updir, "bin", "kittie_monitor.py")
+            self.codesetup["monitors"]'machine'] = self.config['machine']['name']
+            self.codesetup["monitors"]["sched_args"] = self.config['machine'][self.keywords['scheduler_args']]
             self.monitors = {}
             self.monitors["monitors"] = self.codesetup["monitors"]
             self.monitors['groups'] = {}
@@ -793,8 +795,8 @@ class KittieJob(cheetah.Campaign):
                 sweepenv = cheetah.parameters.ParamEnvVar(lname, lname + "-" + varname, varname, [self.config[lname]['env'][varname]])
                 sweepargs += [sweepenv]
 
-        if ('ADIOS-serial' in self.config) and ('monitors' in self.codenames):
-            sweepenv = cheetah.parameters.ParamEnvVar('monitors', "monitors-ADIOS", "ADIOS", [self.config['ADIOS-serial']])
+        if ('ADIOS-serial' in self.config) and ("monitors" in self.codenames):
+            sweepenv = cheetah.parameters.ParamEnvVar("monitors", "monitors-ADIOS", "ADIOS", [self.config['ADIOS-serial']])
             sweepargs += [sweepenv]
 
 
@@ -978,7 +980,7 @@ class KittieJob(cheetah.Campaign):
                 outfile.write(outstr)
 
             outname = os.path.join(outdir, "monitor-config.yaml")
-            outstr = yaml.dump(self.monitors['monitors'], default_flow_style=False, Dumper=self.OrderedDumper)
+            outstr = yaml.dump(self.monitors["monitors"], default_flow_style=False, Dumper=self.OrderedDumper)
             with open(outname, "w") as outfile:
                 outfile.write(outstr)
 
