@@ -690,6 +690,7 @@ class BlockFiles(object):
         InitComp  = re.compile(InitExpr,  re.MULTILINE)
         FinalComp = re.compile(FinalExpr, re.MULTILINE)
         StepComp  = re.compile(StepExpr,  re.MULTILINE)
+        IncludeComp  = re.compile(IncludeExpr,  re.MULTILINE)
         StartComp = re.compile(StartExpr, re.MULTILINE)
         EndComp   = re.compile(EndExpr,   re.MULTILINE)
         TimerComp = re.compile(TimerExpr, re.MULTILINE)
